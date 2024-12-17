@@ -76,8 +76,8 @@
     const handleTouchMove = (e) => {
       if (isDragging) {
         const touch = e.touches[0];
-        const x = (touch.clientX - offsetX) * 1.5; // 增加移动速度，这里乘以1.5
-        const y = (touch.clientY - offsetY) * 1.5; // 增加移动速度，这里乘以1.5
+        const x = (touch.clientX - offsetX) * 3.0; // 增加移动速度，这里乘以1.5
+        const y = (touch.clientY - offsetY) * 3.0; // 增加移动速度，这里乘以1.5
 
         image2.style.left = `${x}px`;
         image2.style.top = `${y}px`;
@@ -93,7 +93,7 @@
         const touchEndX = e.changedTouches[0].clientX;
         const distance = touchEndX - startX;
 
-        if (distance > 100) { // 右滑超过100像素
+        if (distance > 500) { // 右滑超过100像素
           image2.style.left = `${screenWidth}px`; // 移出屏幕
           setTimeout(() => {
             image2.style.display = 'none'; // 隐藏图2
