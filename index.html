@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图像缩放与拖动</title>
+  <title>图像拖动与右滑移除</title>
   <style>
     body {
       margin: 0;
@@ -21,9 +21,9 @@
       left: 50%;
       z-index: 2;
       cursor: grab;
-      transform: translate(-50%, -50%) scale(0.1); /* 初始缩放 */
-      transition: transform 0.5s ease-in-out, left 0.5s ease-out;
-      image-rendering: pixelated; /* 防止高分辨率下模糊 */
+      transform: translate(-50%, -50%) scale(0.025); /* 初始缩放为0.025倍 */
+      transition: transform 0.2s ease, left 0.5s ease-out;
+      image-rendering: pixelated;
     }
 
     #image2:active {
@@ -39,63 +39,81 @@
 
     let isDragging = false;
     let offsetX = 0, offsetY = 0, startX = 0;
-    let scaleFactor = 0.1;
-    const maxScaleFactor = 0.5;
+    let scaleFactor = 0.025; // 初始缩放
+    const scaleIncrement = 0.025; // 每次点击增加的缩放
+    const maxScaleFactor = 0.125; // 最大缩放
     const screenWidth = window.innerWidth;
 
-    // 修正初始图片大小
+    // 设置初始大小
     window.addEventListener('load', () => {
-      const dpr = window.devicePixelRatio || 1; // 获取设备像素比
+      const dpr = window.devicePixelRatio || 1; // 设备像素比
       image2.style.width = `${image2.naturalWidth / dpr}px`;
       image2.style.height = `${image2.naturalHeight / dpr}px`;
-      image2.style.transform = 'translate(-50%, -50%) scale(0.1)'; // 确保初始缩放为 0.1
+      image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
     });
 
-    // 鼠标按下
-    image2.addEventListener('mousedown', (e) => {
-      if (e.button === 0) {
-        isDragging = true;
-        const rect = image2.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-        startX = e.clientX;
-        image2.style.cursor = 'grabbing';
-      }
-    });
+    // 鼠标或触摸开始
+    const startDrag = (e) => {
+      e.preventDefault();
+      isDragging = true;
 
-    // 鼠标移动
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        image2.style.left = `${x}px`;
-        image2.style.top = `${y}px`;
-      }
-    });
+      const rect = image2.getBoundingClientRect();
+      offsetX = (e.clientX || e.touches[0].clientX) - rect.left;
+      offsetY = (e.clientY || e.touches[0].clientY) - rect.top;
+      startX = e.clientX || e.touches[0].clientX;
 
-    // 鼠标松开
-    document.addEventListener('mouseup', (e) => {
+      image2.style.cursor = 'grabbing';
+    };
+
+    // 鼠标或触摸移动
+    const onDrag = (e) => {
+      if (!isDragging) return;
+
+      const clientX = e.clientX || e.touches[0].clientX;
+      const clientY = e.clientY || e.touches[0].clientY;
+
+      const x = clientX - offsetX;
+      const y = clientY - offsetY;
+
+      image2.style.left = `${x}px`;
+      image2.style.top = `${y}px`;
+    };
+
+    // 鼠标或触摸结束
+    const stopDrag = (e) => {
       if (isDragging) {
         isDragging = false;
         image2.style.cursor = 'grab';
-        const rect = image2.getBoundingClientRect();
-        if (e.clientX - startX > 100 && rect.left > screenWidth / 2) {
+
+        const endX = e.clientX || e.changedTouches[0].clientX;
+        if (endX - startX > 100) {
+          // 右滑移出屏幕
           image2.style.left = `${screenWidth}px`;
           setTimeout(() => {
             image2.style.display = 'none';
           }, 500);
         }
       }
-    });
+    };
 
-    // 点击放大
+    // 点击放大逻辑
     image2.addEventListener('click', (e) => {
       e.stopPropagation();
       if (scaleFactor < maxScaleFactor) {
-        scaleFactor = Math.min(scaleFactor + 0.1, maxScaleFactor);
+        scaleFactor = Math.min(scaleFactor + scaleIncrement, maxScaleFactor);
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
       }
     });
+
+    // 鼠标事件
+    image2.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', stopDrag);
+
+    // 触摸事件
+    image2.addEventListener('touchstart', startDrag);
+    document.addEventListener('touchmove', onDrag);
+    document.addEventListener('touchend', stopDrag);
   </script>
 </body>
 </html>
