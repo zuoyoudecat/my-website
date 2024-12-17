@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片交互效果</title>
+  <style>
+    /* 页面样式 */
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    /* 图片1样式 */
+    #image1 {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      max-width: 100%;
+      max-height: 100%;
+
+    }
+
+    /* 图片2样式 */
+    .draggable {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.01); /* 初始缩小为原来的 1/10 */
+      transition: transform 0.5s ease-in-out; /* 放大时的过渡效果 */
+      z-index: 2;
+      cursor: grab;
+      max-width: 100%;
+      max-height: 100%;
+
+    }
+
+    .draggable:active {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body>
+  <!-- 图片1（非背景） -->
+  <img src="background.jpg" alt="图片1" id="image1">
+
+  <!-- 图片2（可拖拽和缩放） -->
+  <img src="foreground.jpg" alt="图片2" class="draggable" id="image2">
+  
+  <script>
+    // 获取图片2元素
+    const image2 = document.getElementById('image2');
+
+    // 初始化拖拽相关变量
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    let scaleFactor = 0.01; // 初始缩放比例
+
+    // 鼠标点击图片2：逐步放大图片
+    image2.addEventListener('click', (e) => {
+      e.stopPropagation(); // 防止拖拽触发点击
+      if (scaleFactor < 0.5) { // 最大放大比例为 1
+        scaleFactor = Math.min(scaleFactor + 0.03, 0.5); // 每次点击增大 0.03，最多到 1
+        image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
+      }
+    });
+
+    // 鼠标按下图片2：开始拖拽
+    image2.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      offsetX = e.clientX - image2.getBoundingClientRect().left;
+      offsetY = e.clientY - image2.getBoundingClientRect().top;
+    });
+
+    // 鼠标移动图片2：更新图片位置
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const x = e.clientX - offsetX;
+      const y = e.clientY - offsetY;
+      image2.style.left = `${x}px`;
+      image2.style.top = `${y}px`;
+    });
+
+    // 鼠标松开图片2：停止拖拽
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+  </script>
+</body>
+</html>
