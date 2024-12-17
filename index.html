@@ -18,9 +18,6 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 1;
-      max-width: 100%;
-      max-height: 100%;
-
     }
 
     /* 图片2样式 */
@@ -28,13 +25,10 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.01); /* 初始缩小为原来的 1/10 */
+      transform: translate(-50%, -50%) scale(0.1); /* 初始缩小为原来的 1/10 */
       transition: transform 0.5s ease-in-out; /* 放大时的过渡效果 */
       z-index: 2;
       cursor: grab;
-      max-width: 100%;
-      max-height: 100%;
-
     }
 
     .draggable:active {
@@ -57,37 +51,57 @@
     let isDragging = false;
     let offsetX = 0;
     let offsetY = 0;
-    let scaleFactor = 0.01; // 初始缩放比例
+    let scaleFactor = 0.1; // 初始缩放比例
+
+    // 鼠标和触摸事件的通用逻辑：更新位置
+    function updatePosition(event) {
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+      const x = clientX - offsetX;
+      const y = clientY - offsetY;
+      image2.style.left = `${x}px`;
+      image2.style.top = `${y}px`;
+    }
+
+    // 鼠标或触摸开始：开始拖拽
+    function startDragging(event) {
+      isDragging = true;
+      const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+      const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+      offsetX = clientX - image2.getBoundingClientRect().left;
+      offsetY = clientY - image2.getBoundingClientRect().top;
+    }
+
+    // 鼠标或触摸结束：停止拖拽
+    function stopDragging() {
+      isDragging = false;
+    }
+
+    // 鼠标或触摸移动：更新位置
+    function handleDragging(event) {
+      if (!isDragging) return;
+      event.preventDefault(); // 阻止页面滚动
+      updatePosition(event);
+    }
 
     // 鼠标点击图片2：逐步放大图片
     image2.addEventListener('click', (e) => {
       e.stopPropagation(); // 防止拖拽触发点击
-      if (scaleFactor < 0.5) { // 最大放大比例为 1
-        scaleFactor = Math.min(scaleFactor + 0.03, 0.5); // 每次点击增大 0.03，最多到 1
+      if (scaleFactor < 0.5) { // 最大放大比例为 0.5
+        scaleFactor = Math.min(scaleFactor + 0.05, 0.5); // 每次点击增大 0.1，最多到 0.5
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
       }
     });
 
-    // 鼠标按下图片2：开始拖拽
-    image2.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      offsetX = e.clientX - image2.getBoundingClientRect().left;
-      offsetY = e.clientY - image2.getBoundingClientRect().top;
-    });
+    // 绑定鼠标事件
+    image2.addEventListener('mousedown', startDragging);
+    document.addEventListener('mousemove', handleDragging);
+    document.addEventListener('mouseup', stopDragging);
 
-    // 鼠标移动图片2：更新图片位置
-    document.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const x = e.clientX - offsetX;
-      const y = e.clientY - offsetY;
-      image2.style.left = `${x}px`;
-      image2.style.top = `${y}px`;
-    });
-
-    // 鼠标松开图片2：停止拖拽
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
+    // 绑定触摸事件
+    image2.addEventListener('touchstart', startDragging);
+    document.addEventListener('touchmove', handleDragging);
+    document.addEventListener('touchend', stopDragging);
   </script>
 </body>
 </html>
