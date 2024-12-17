@@ -8,8 +8,8 @@
     body {
       margin: 0;
       overflow: hidden;
-      height: 100vh; /* 适配视口高度 */
-      background-image: url('background.jpg');
+      height: 100vh;
+      background-image: url('./background.jpg'); /* 确保路径正确 */
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -31,82 +31,67 @@
   </style>
 </head>
 <body>
-  <img src="foreground.jpg" alt="图片2" id="image2">
+  <img src="./foreground.jpg" alt="图片2" id="image2">
 
   <script>
     const image2 = document.getElementById('image2');
+
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0, startX = 0;
+    let scaleFactor = 0.1;
+    const maxScaleFactor = 0.5;
     const screenWidth = window.innerWidth;
 
-    let isDragging = false; // 是否正在拖拽
-    let offsetX = 0; // 鼠标点击点相对图片左上角的水平偏移
-    let offsetY = 0; // 鼠标点击点相对图片左上角的垂直偏移
-    let startX = 0; // 拖拽开始时的鼠标 X 坐标
-    let scaleFactor = 0.1; // 图片2初始缩放比例
-    const maxScaleFactor = 0.5; // 图片2最大缩放比例
+    // 图片加载完成后设置初始大小
+    window.addEventListener('load', () => {
+      image2.style.width = `${image2.naturalWidth}px`;
+      image2.style.height = `${image2.naturalHeight}px`;
+      image2.style.transform = 'translate(-50%, -50%) scale(0.1)';
+    });
 
-    // 鼠标按下时记录偏移量
+    // 拖拽逻辑
     image2.addEventListener('mousedown', (e) => {
-      if (e.button === 0) { // 只处理左键
+      if (e.button === 0) {
         isDragging = true;
-
-        // 获取图片2的边界
         const rect = image2.getBoundingClientRect();
-
-        // 记录鼠标点击点相对图片左上角的偏移量
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
-
-        // 记录拖拽的起始位置
         startX = e.clientX;
-
         image2.style.cursor = 'grabbing';
       }
     });
 
-    // 鼠标移动时更新图片2的位置
     document.addEventListener('mousemove', (e) => {
       if (isDragging) {
-        const x = e.clientX - offsetX; // 鼠标当前位置减去初始偏移
+        const x = e.clientX - offsetX;
         const y = e.clientY - offsetY;
-
         image2.style.left = `${x}px`;
         image2.style.top = `${y}px`;
       }
     });
 
-    // 鼠标松开时停止拖拽
     document.addEventListener('mouseup', (e) => {
       if (isDragging) {
         isDragging = false;
         image2.style.cursor = 'grab';
 
-        // 检查鼠标松开时是否右滑出屏幕
         const rect = image2.getBoundingClientRect();
-        const endX = e.clientX;
-
-        // 如果右滑幅度足够大，触发移出动画
-        if (endX - startX > 100 && rect.left > screenWidth / 2) {
-          image2.style.left = `${screenWidth}px`; // 移出屏幕
+        if (e.clientX - startX > 100 && rect.left > screenWidth / 2) {
+          image2.style.left = `${screenWidth}px`;
           setTimeout(() => {
-            image2.style.display = 'none'; // 移除图片
-          }, 500); // 动画结束后隐藏
+            image2.style.display = 'none';
+          }, 500);
         }
       }
     });
 
-    // 点击图片2放大
+    // 点击放大
     image2.addEventListener('click', (e) => {
-      e.stopPropagation(); // 防止事件冒泡
+      e.stopPropagation();
       if (scaleFactor < maxScaleFactor) {
         scaleFactor = Math.min(scaleFactor + 0.1, maxScaleFactor);
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
       }
-    });
-
-    // 确保图片2显示为原始大小
-    window.addEventListener('load', () => {
-      image2.style.width = `${image2.naturalWidth}px`;
-      image2.style.height = `${image2.naturalHeight}px`;
     });
   </script>
 </body>
