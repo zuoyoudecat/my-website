@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图像拖动与右滑移除</title>
+  <title>图像缩放与右滑移除</title>
   <style>
     body {
       margin: 0;
@@ -20,14 +20,9 @@
       top: 50%;
       left: 50%;
       z-index: 2;
-      cursor: grab;
       transform: translate(-50%, -50%) scale(0.025); /* 初始缩放为0.025倍 */
       transition: transform 0.2s ease, left 0.5s ease-out;
       image-rendering: pixelated;
-    }
-
-    #image2:active {
-      cursor: grabbing;
     }
   </style>
 </head>
@@ -37,11 +32,10 @@
   <script>
     const image2 = document.getElementById('image2');
 
-    let isDragging = false;
-    let offsetX = 0, offsetY = 0, startX = 0;
     let scaleFactor = 0.025; // 初始缩放
     const scaleIncrement = 0.025; // 每次点击增加的缩放
-    const maxScaleFactor = 0.25; // 最大缩放
+    const maxScaleFactor = 0.125; // 最大缩放
+    const minScaleFactor = 0.025; // 最小缩放
     const screenWidth = window.innerWidth;
 
     // 设置初始大小
@@ -52,76 +46,42 @@
       image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
     });
 
-    // 鼠标或触摸开始
-    const startDrag = (e) => {
-      e.preventDefault();
-      isDragging = true;
-
-      const rect = image2.getBoundingClientRect();
-      offsetX = (e.clientX || e.touches[0].clientX) - rect.left;
-      offsetY = (e.clientY || e.touches[0].clientY) - rect.top;
-      startX = e.clientX || e.touches[0].clientX;
-
-      image2.style.cursor = 'grabbing';
-    };
-
-    // 鼠标或触摸移动
-    const onDrag = (e) => {
-      if (!isDragging) return;
-
-      const clientX = e.clientX || e.touches[0].clientX;
-      const clientY = e.clientY || e.touches[0].clientY;
-
-      const x = clientX - offsetX;
-      const y = clientY - offsetY;
-
-      image2.style.left = `${x}px`;
-      image2.style.top = `${y}px`;
-    };
-
-    // 鼠标或触摸结束
-    const stopDrag = (e) => {
-      if (isDragging) {
-        isDragging = false;
-        image2.style.cursor = 'grab';
-
-        const endX = e.clientX || e.changedTouches[0].clientX;
-        if (endX - startX > 100) {
-          // 右滑移出屏幕
-          image2.style.left = `${screenWidth}px`;
-          setTimeout(() => {
-            image2.style.display = 'none';
-          }, 500);
-        }
-      }
-    };
-
-    // 点击屏幕或触摸放大图2
-    const handleScreenClick = (e) => {
+    // 点击屏幕放大图2
+    const handleScreenClick = () => {
       if (scaleFactor < maxScaleFactor) {
         scaleFactor = Math.min(scaleFactor + scaleIncrement, maxScaleFactor);
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
       }
     };
 
-    // 鼠标事件绑定
-    image2.addEventListener('mousedown', startDrag);
-    document.addEventListener('mousemove', onDrag);
-    document.addEventListener('mouseup', stopDrag);
+    // 检测右滑移除屏幕
+    const handleRightSwipe = (e) => {
+      if (scaleFactor === minScaleFactor) {
+        const startX = e.touches[0].clientX;
 
-    // 触摸事件绑定
-    image2.addEventListener('touchstart', startDrag);
-    document.addEventListener('touchmove', onDrag);
-    document.addEventListener('touchend', stopDrag);
+        const onTouchMove = (moveEvent) => {
+          const currentX = moveEvent.touches[0].clientX;
+          const distance = currentX - startX;
 
-    // 屏幕点击或触摸
-    document.addEventListener('click', handleScreenClick);
-    document.addEventListener('touchstart', (e) => {
-      // 避免多点触控误触发
-      if (e.touches.length === 1) {
-        handleScreenClick(e);
+          if (distance > 100) { // 检测右滑超过100像素
+            image2.style.left = `${screenWidth}px`;
+            document.removeEventListener('touchmove', onTouchMove);
+            setTimeout(() => {
+              image2.style.display = 'none';
+            }, 500);
+          }
+        };
+
+        document.addEventListener('touchmove', onTouchMove);
+        document.addEventListener('touchend', () => {
+          document.removeEventListener('touchmove', onTouchMove);
+        }, { once: true });
       }
-    });
+    };
+
+    // 绑定事件
+    document.addEventListener('click', handleScreenClick); // 点击屏幕放大
+    image2.addEventListener('touchstart', handleRightSwipe); // 触摸图2检测右滑
   </script>
 </body>
 </html>
