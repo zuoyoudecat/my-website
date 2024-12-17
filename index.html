@@ -96,9 +96,8 @@
       }
     };
 
-    // 点击放大逻辑
-    image2.addEventListener('click', (e) => {
-      e.stopPropagation();
+    // 点击屏幕放大图2
+    document.addEventListener('click', (e) => {
       if (scaleFactor < maxScaleFactor) {
         scaleFactor = Math.min(scaleFactor + scaleIncrement, maxScaleFactor);
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
