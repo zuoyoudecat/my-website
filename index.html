@@ -17,7 +17,7 @@
 
     #image2 {
       position: absolute;
-      top: 50%;
+      top: 70%;
       left: 50%;
       z-index: 2;
       transform: translate(-50%, -50%) scale(0.025); /* 初始缩放为0.025倍 */
@@ -76,8 +76,8 @@
     const handleTouchMove = (e) => {
       if (isDragging) {
         const touch = e.touches[0];
-        const x = (touch.clientX - offsetX) * 3.0; // 增加移动速度，这里乘以1.5
-        const y = (touch.clientY - offsetY) * 3.0; // 增加移动速度，这里乘以1.5
+        const x = (touch.clientX - offsetX) * 4.0; // 增加移动速度，这里乘以1.5
+        const y = (touch.clientY - offsetY) * 4.0; // 增加移动速度，这里乘以1.5
 
         image2.style.left = `${x}px`;
         image2.style.top = `${y}px`;
