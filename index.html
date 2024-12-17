@@ -96,23 +96,32 @@
       }
     };
 
-    // 点击屏幕放大图2
-    document.addEventListener('click', (e) => {
+    // 点击屏幕或触摸放大图2
+    const handleScreenClick = (e) => {
       if (scaleFactor < maxScaleFactor) {
         scaleFactor = Math.min(scaleFactor + scaleIncrement, maxScaleFactor);
         image2.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
       }
-    });
+    };
 
-    // 鼠标事件
+    // 鼠标事件绑定
     image2.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', onDrag);
     document.addEventListener('mouseup', stopDrag);
 
-    // 触摸事件
+    // 触摸事件绑定
     image2.addEventListener('touchstart', startDrag);
     document.addEventListener('touchmove', onDrag);
     document.addEventListener('touchend', stopDrag);
+
+    // 屏幕点击或触摸
+    document.addEventListener('click', handleScreenClick);
+    document.addEventListener('touchstart', (e) => {
+      // 避免多点触控误触发
+      if (e.touches.length === 1) {
+        handleScreenClick(e);
+      }
+    });
   </script>
 </body>
 </html>
