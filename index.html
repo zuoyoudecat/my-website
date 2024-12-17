@@ -41,8 +41,8 @@
     let offsetX = 0; // 鼠标点击点相对图片左上角的水平偏移
     let offsetY = 0; // 鼠标点击点相对图片左上角的垂直偏移
     let startX = 0; // 拖拽开始时的鼠标 X 坐标
-    let scaleFactor = 0.1; // 图片2初始缩放比例
-    const maxScaleFactor = 0.5; // 图片2最大缩放比例
+    let scaleFactor = 0.05; // 图片2初始缩放比例
+    const maxScaleFactor = 0.25; // 图片2最大缩放比例
 
     // 鼠标按下时记录偏移量
     image2.addEventListener('mousedown', (e) => {
@@ -103,11 +103,7 @@
       }
     });
 
-    // 确保图片2显示为原始大小
-    window.addEventListener('load', () => {
-      image2.style.width = `${image2.naturalWidth}px`;
-      image2.style.height = `${image2.naturalHeight}px`;
-    });
+    
   </script>
 </body>
 </html>
