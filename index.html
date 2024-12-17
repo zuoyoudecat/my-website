@@ -23,6 +23,7 @@
       transform: translate(-50%, -50%) scale(0.025); /* 初始缩放为0.025倍 */
       transition: transform 0.2s ease, left 0.5s ease-out;
       image-rendering: pixelated;
+      touch-action: none; /* 禁用触摸默认行为 */
     }
   </style>
 </head>
@@ -34,8 +35,13 @@
 
     let scaleFactor = 0.025; // 初始缩放
     const scaleIncrement = 0.025; // 每次点击增加的缩放
-    const maxScaleFactor = 0.125; // 最大缩放
+    const maxScaleFactor = 0.375; // 最大缩放
     const minScaleFactor = 0.025; // 最小缩放
+
+    let isDragging = false; // 是否正在拖动
+    let offsetX = 0; // 点击时鼠标相对图片的X偏移
+    let offsetY = 0; // 点击时鼠标相对图片的Y偏移
+    let startX = 0; // 触摸起点X
     const screenWidth = window.innerWidth;
 
     // 设置初始大小
@@ -54,34 +60,53 @@
       }
     };
 
-    // 检测右滑移除屏幕
-    const handleRightSwipe = (e) => {
-      if (scaleFactor === minScaleFactor) {
-        const startX = e.touches[0].clientX;
+    // 开始拖动
+    const handleTouchStart = (e) => {
+      if (scaleFactor > minScaleFactor) {
+        isDragging = true;
+        const rect = image2.getBoundingClientRect();
+        const touch = e.touches[0];
+        offsetX = touch.clientX - rect.left;
+        offsetY = touch.clientY - rect.top;
+        startX = touch.clientX; // 记录触摸开始的X坐标
+      }
+    };
 
-        const onTouchMove = (moveEvent) => {
-          const currentX = moveEvent.touches[0].clientX;
-          const distance = currentX - startX;
+    // 拖动过程
+    const handleTouchMove = (e) => {
+      if (isDragging) {
+        const touch = e.touches[0];
+        const x = touch.clientX - offsetX;
+        const y = touch.clientY - offsetY;
 
-          if (distance > 100) { // 检测右滑超过100像素
-            image2.style.left = `${screenWidth}px`;
-            document.removeEventListener('touchmove', onTouchMove);
-            setTimeout(() => {
-              image2.style.display = 'none';
-            }, 500);
-          }
-        };
+        image2.style.left = `${x}px`;
+        image2.style.top = `${y}px`;
+      }
+    };
 
-        document.addEventListener('touchmove', onTouchMove);
-        document.addEventListener('touchend', () => {
-          document.removeEventListener('touchmove', onTouchMove);
-        }, { once: true });
+    // 停止拖动
+    const handleTouchEnd = (e) => {
+      if (isDragging) {
+        isDragging = false;
+
+        // 检测右滑是否移除
+        const touchEndX = e.changedTouches[0].clientX;
+        const distance = touchEndX - startX;
+
+        if (distance > 100) { // 右滑超过100像素
+          image2.style.left = `${screenWidth}px`; // 移出屏幕
+          setTimeout(() => {
+            image2.style.display = 'none'; // 隐藏图2
+          }, 500);
+        }
       }
     };
 
     // 绑定事件
     document.addEventListener('click', handleScreenClick); // 点击屏幕放大
-    image2.addEventListener('touchstart', handleRightSwipe); // 触摸图2检测右滑
+    image2.addEventListener('touchstart', handleTouchStart); // 开始拖动
+    image2.addEventListener('touchmove', handleTouchMove); // 拖动
+    image2.addEventListener('touchend', handleTouchEnd); // 停止拖动
   </script>
 </body>
 </html>
