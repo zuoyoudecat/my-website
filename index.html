@@ -3,31 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图片拖拽效果</title>
+  <title>拖拽并右滑移除图片</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      height: 100vh; /* 设置视口高度 */
+      height: 100vh; /* 适配视口高度 */
+      background-image: url('background.jpg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
-    /* 设置背景图样式 */
-    body {
-      background-image: url('background.jpg'); /* 图1路径 */
-      background-size: contain; /* 保持原始比例 */
-      background-repeat: no-repeat; /* 禁止重复 */
-      background-position: center; /* 居中显示 */
-    }
-
-    /* 图片2样式 */
     #image2 {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.1); /* 初始大小为原始的1/10 */
+      transform: translate(-50%, -50%) scale(0.1); /* 初始缩放为1/10 */
       z-index: 2;
       cursor: grab;
-      transition: transform 0.5s ease-in-out;
+      transition: transform 0.5s ease-in-out, left 0.5s ease-out;
     }
 
     #image2:active {
@@ -40,10 +35,12 @@
 
   <script>
     const image2 = document.getElementById('image2');
+    const screenWidth = window.innerWidth;
 
     let isDragging = false; // 是否正在拖拽
     let offsetX = 0; // 鼠标点击点相对图片左上角的水平偏移
     let offsetY = 0; // 鼠标点击点相对图片左上角的垂直偏移
+    let startX = 0; // 拖拽开始时的鼠标 X 坐标
     let scaleFactor = 0.1; // 图片2初始缩放比例
     const maxScaleFactor = 0.5; // 图片2最大缩放比例
 
@@ -55,9 +52,12 @@
         // 获取图片2的边界
         const rect = image2.getBoundingClientRect();
 
-        // 计算鼠标点击点相对图片左上角的偏移量
+        // 记录鼠标点击点相对图片左上角的偏移量
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
+
+        // 记录拖拽的起始位置
+        startX = e.clientX;
 
         image2.style.cursor = 'grabbing';
       }
@@ -75,9 +75,23 @@
     });
 
     // 鼠标松开时停止拖拽
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      image2.style.cursor = 'grab';
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        isDragging = false;
+        image2.style.cursor = 'grab';
+
+        // 检查鼠标松开时是否右滑出屏幕
+        const rect = image2.getBoundingClientRect();
+        const endX = e.clientX;
+
+        // 如果右滑幅度足够大，触发移出动画
+        if (endX - startX > 100 && rect.left > screenWidth / 2) {
+          image2.style.left = `${screenWidth}px`; // 移出屏幕
+          setTimeout(() => {
+            image2.style.display = 'none'; // 移除图片
+          }, 500); // 动画结束后隐藏
+        }
+      }
     });
 
     // 点击图片2放大
