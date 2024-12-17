@@ -94,7 +94,7 @@
         const distance = touchEndX - startX;
 
         if (distance > 500) { // 右滑超过100像素
-          image2.style.left = `${screenWidth}px`; // 移出屏幕
+          image2.style.left = `${screenWidth}px`; // 移出屏幕，保持页面布局不变
           setTimeout(() => {
             image2.style.display = 'none'; // 隐藏图2
           }, 500);
