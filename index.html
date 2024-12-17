@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>拖拽并右滑移除图片</title>
+  <title>图像缩放与拖动</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       height: 100vh;
-      background-image: url('./background.jpg'); /* 确保路径正确 */
+      background-image: url('./background.jpg'); /* 背景图片路径 */
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -19,10 +19,11 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.1); /* 初始缩放为1/10 */
       z-index: 2;
       cursor: grab;
+      transform: translate(-50%, -50%) scale(0.1); /* 初始缩放 */
       transition: transform 0.5s ease-in-out, left 0.5s ease-out;
+      image-rendering: pixelated; /* 防止高分辨率下模糊 */
     }
 
     #image2:active {
@@ -42,14 +43,15 @@
     const maxScaleFactor = 0.5;
     const screenWidth = window.innerWidth;
 
-    // 图片加载完成后设置初始大小
+    // 修正初始图片大小
     window.addEventListener('load', () => {
-      image2.style.width = `${image2.naturalWidth}px`;
-      image2.style.height = `${image2.naturalHeight}px`;
-      image2.style.transform = 'translate(-50%, -50%) scale(0.1)';
+      const dpr = window.devicePixelRatio || 1; // 获取设备像素比
+      image2.style.width = `${image2.naturalWidth / dpr}px`;
+      image2.style.height = `${image2.naturalHeight / dpr}px`;
+      image2.style.transform = 'translate(-50%, -50%) scale(0.1)'; // 确保初始缩放为 0.1
     });
 
-    // 拖拽逻辑
+    // 鼠标按下
     image2.addEventListener('mousedown', (e) => {
       if (e.button === 0) {
         isDragging = true;
@@ -61,6 +63,7 @@
       }
     });
 
+    // 鼠标移动
     document.addEventListener('mousemove', (e) => {
       if (isDragging) {
         const x = e.clientX - offsetX;
@@ -70,11 +73,11 @@
       }
     });
 
+    // 鼠标松开
     document.addEventListener('mouseup', (e) => {
       if (isDragging) {
         isDragging = false;
         image2.style.cursor = 'grab';
-
         const rect = image2.getBoundingClientRect();
         if (e.clientX - startX > 100 && rect.left > screenWidth / 2) {
           image2.style.left = `${screenWidth}px`;
